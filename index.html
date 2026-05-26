@@ -67,6 +67,27 @@
     .memo { background: #fff8e1; border-left: 4px solid #FFD700; padding: 12px 16px; border-radius: 0 6px 6px 0; font-size: 12px; line-height: 1.8; margin-top: 8px; }
     .memo strong { display: block; margin-bottom: 4px; font-size: 13px; }
 
+    /* 保存ボタン */
+    .save-btn { width: 100%; margin-top: 12px; padding: 12px; background: #FFD700; color: #1a1a2e; border: none; border-radius: 6px; font-size: 14px; font-weight: 900; cursor: pointer; }
+    .save-btn:hover { background: #f5c800; }
+
+    /* 案件履歴 */
+    .history-area { padding: 24px 28px; border-top: 2px solid #f0f0f0; }
+    .history-area h2 { font-size: 15px; font-weight: 900; color: #E8222A; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #E8222A; }
+    .summary-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .summary-chip { background: #0D1B3E; color: #fff; border-radius: 8px; padding: 10px 16px; font-size: 12px; }
+    .summary-chip .num { font-size: 22px; font-weight: 900; color: #FFD700; display: block; }
+    .history-list { display: flex; flex-direction: column; gap: 8px; }
+    .history-item { background: #f9fafc; border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+    .history-item .hi-date { font-size: 11px; color: #999; white-space: nowrap; }
+    .history-item .hi-type { font-size: 12px; font-weight: 700; flex: 1; }
+    .history-item .hi-amount { font-size: 15px; font-weight: 900; color: #E8222A; white-space: nowrap; }
+    .history-item .hi-del { background: none; border: none; color: #ccc; font-size: 16px; cursor: pointer; padding: 0 4px; }
+    .history-item .hi-del:hover { color: #E8222A; }
+    .history-empty { color: #aaa; font-size: 13px; text-align: center; padding: 20px 0; }
+    .clear-btn { display: block; margin-top: 14px; padding: 8px; background: none; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; color: #999; cursor: pointer; width: 100%; }
+    .clear-btn:hover { border-color: #E8222A; color: #E8222A; }
+
     /* 印刷 */
     .print-btn { display: block; margin: 0 28px 24px; padding: 12px; background: #E8222A; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; }
     .print-btn:hover { background: #c0161d; }
@@ -75,6 +96,8 @@
       body { background: #fff; }
       .page { box-shadow: none; margin: 0; border-radius: 0; max-width: 100%; }
       .print-btn { display: none; }
+      .save-btn { display: none; }
+      .history-area { display: none; }
       .calc-area { page-break-after: always; }
     }
 
@@ -192,6 +215,7 @@
       </div>
       <div class="note-text">※ 状況・作業内容により変動します。高速料金は目安込み・実際はETCの明細で確認。</div>
     </div>
+    <button class="save-btn" onclick="saveCase()">📝 この案件を保存</button>
   </div>
 
   <!-- 距離料金表 -->
@@ -290,6 +314,19 @@
       <strong>⚠️ 連絡時の確認事項</strong>
       ① 現在地（市区町村）／ ② 搬送先の住所または工場名 ／ ③ 車種・車両サイズ ／ ④ トラブルの内容 ／ ⑤ 高速道路か一般道か ／ ⑥ 深夜・早朝か
     </div>
+  </div>
+
+  <!-- 案件履歴 -->
+  <div class="history-area">
+    <h2>📂 案件履歴</h2>
+    <div class="summary-bar">
+      <div class="summary-chip">今月の件数<span class="num" id="sum-count">0件</span></div>
+      <div class="summary-chip">今月の売上合計<span class="num" id="sum-total">¥0</span></div>
+    </div>
+    <div class="history-list" id="history-list">
+      <div class="history-empty">保存した案件がありません</div>
+    </div>
+    <button class="clear-btn" onclick="clearAll()">🗑️ 全件削除</button>
   </div>
 
   <button class="print-btn" onclick="window.print()">🖨️ PDFとして保存・印刷</button>
@@ -448,6 +485,86 @@
 
   calculate();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+
+  // 案件保存
+  function saveCase() {
+    const base = Math.max(0, parseFloat(document.getElementById('baseFee').value) || 0);
+    const d1 = Math.max(0, parseFloat(document.getElementById('dist1').value) || 0);
+    const d2 = Math.max(0, parseFloat(document.getElementById('dist2').value) || 0);
+    const toll = Math.max(0, parseFloat(document.getElementById('tollFee').value) || 0);
+    const isNight = document.getElementById('nightCheck').checked;
+    const kaiso = d1 * 605;
+    const ken = d2 * 990;
+    const subtotal = base + kaiso + ken;
+    const nightAdd = isNight ? Math.round(subtotal * 0.3) : 0;
+    const total = subtotal + toll + nightAdd;
+
+    const typeEl = document.getElementById('serviceType');
+    const typeName = typeEl.options[typeEl.selectedIndex].text;
+
+    const record = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+      fullDate: new Date().toISOString(),
+      type: typeName.replace(/（.*?）/, ''),
+      total: total,
+    };
+
+    const list = loadList();
+    list.unshift(record);
+    localStorage.setItem('alpaca_cases', JSON.stringify(list));
+    renderHistory();
+
+    const btn = document.querySelector('.save-btn');
+    btn.textContent = '✅ 保存しました';
+    setTimeout(() => { btn.textContent = '📝 この案件を保存'; }, 1500);
+  }
+
+  function loadList() {
+    try { return JSON.parse(localStorage.getItem('alpaca_cases') || '[]'); } catch { return []; }
+  }
+
+  function deleteCase(id) {
+    const list = loadList().filter(r => r.id !== id);
+    localStorage.setItem('alpaca_cases', JSON.stringify(list));
+    renderHistory();
+  }
+
+  function clearAll() {
+    if (!confirm('全件削除しますか？')) return;
+    localStorage.removeItem('alpaca_cases');
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = loadList();
+    const container = document.getElementById('history-list');
+    const now = new Date();
+    const thisMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+
+    const monthly = list.filter(r => r.fullDate && r.fullDate.startsWith(thisMonth));
+    const monthCount = monthly.length;
+    const monthTotal = monthly.reduce((s, r) => s + r.total, 0);
+
+    document.getElementById('sum-count').textContent = monthCount + '件';
+    document.getElementById('sum-total').textContent = '¥' + monthTotal.toLocaleString();
+
+    if (list.length === 0) {
+      container.innerHTML = '<div class="history-empty">保存した案件がありません</div>';
+      return;
+    }
+
+    container.innerHTML = list.map(r => `
+      <div class="history-item">
+        <span class="hi-date">${r.date}</span>
+        <span class="hi-type">${r.type}</span>
+        <span class="hi-amount">¥${r.total.toLocaleString()}</span>
+        <button class="hi-del" onclick="deleteCase(${r.id})" title="削除">✕</button>
+      </div>
+    `).join('');
+  }
+
+  renderHistory();
 </script>
 </body>
 </html>
