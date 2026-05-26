@@ -153,6 +153,17 @@
         <label>🏁 搬送先まで（牽引輸送）距離 km</label>
         <input type="number" id="dist2" placeholder="例：10" min="0" step="1" oninput="calculate()">
       </div>
+      <div class="form-group full">
+        <label>📍 現場住所（距離確認用）</label>
+        <input type="text" id="addr1" placeholder="例：神戸市中央区元町1-1" style="font-size:13px;">
+      </div>
+      <div class="form-group full">
+        <label>🏁 搬送先住所（距離確認用）</label>
+        <input type="text" id="addr2" placeholder="例：尼崎市道意町1-1" style="font-size:13px;">
+      </div>
+      <div class="form-group full">
+        <button type="button" onclick="openMap()" style="width:100%; padding:10px; background:#1a2f5e; color:#FFD700; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer;">🗺️ Googleマップで距離を確認する</button>
+      </div>
     </div>
 
     <div class="night-toggle" onclick="document.getElementById('nightCheck').click()">
@@ -565,6 +576,14 @@
   }
 
   renderHistory();
+
+  function openMap() {
+    const a1 = document.getElementById('addr1').value.trim();
+    const a2 = document.getElementById('addr2').value.trim();
+    if (!a1 && !a2) { alert('住所を入力してください'); return; }
+    const url = 'https://www.google.com/maps/dir/' + encodeURIComponent(a1 || '現在地') + '/' + encodeURIComponent(a2 || '');
+    window.open(url, '_blank');
+  }
 </script>
 </body>
 </html>
