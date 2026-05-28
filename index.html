@@ -67,8 +67,10 @@
     .memo { background: #fff8e1; border-left: 4px solid #FFD700; padding: 12px 16px; border-radius: 0 6px 6px 0; font-size: 12px; line-height: 1.8; margin-top: 8px; }
     .memo strong { display: block; margin-bottom: 4px; font-size: 13px; }
 
-    /* 保存ボタン */
-    .save-btn { width: 100%; margin-top: 12px; padding: 12px; background: #FFD700; color: #1a1a2e; border: none; border-radius: 6px; font-size: 14px; font-weight: 900; cursor: pointer; }
+    /* コピー・保存ボタン */
+    .copy-btn { width: 100%; margin-top: 10px; padding: 11px; background: #1a2f5e; color: #FFD700; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .copy-btn:hover { background: #0d1b3e; }
+    .save-btn { width: 100%; margin-top: 8px; padding: 12px; background: #FFD700; color: #1a1a2e; border: none; border-radius: 6px; font-size: 14px; font-weight: 900; cursor: pointer; }
     .save-btn:hover { background: #f5c800; }
 
     /* 案件履歴 */
@@ -129,18 +131,18 @@
         <select id="serviceType" onchange="calculate()">
           <option value="8000">バッテリー上がり（ジャンプスタート）</option>
           <option value="8000">タイヤ交換（スペアへ交換）</option>
-          <option value="5000">ガス欠・燃料補給（燃料代別）</option>
+          <option value="8000">ガス欠・燃料補給（燃料代別）</option>
           <option value="15000">脱輪・スタック救出</option>
-          <option value="10000">故障車搬送（エンジン不動など）</option>
+          <option value="18000">故障車搬送（エンジン不動など）</option>
           <option value="20000">事故搬送</option>
-          <option value="25000">高速道路対応（高速料金別）</option>
-          <option value="50000">冠水・水没車の引き上げ・搬送</option>
-          <option value="10000">車検切れ車両の搬送</option>
+          <option value="32000">高速道路対応（高速料金別）</option>
+          <option value="25000">冠水・水没車の引き上げ・搬送</option>
+          <option value="18000">車検切れ車両の搬送</option>
         </select>
       </div>
       <div class="form-group">
         <label>作業種類の基本料金（すべて税込）</label>
-        <input type="number" id="baseFee" value="12000" min="0" step="1000" onchange="calculate()" style="font-weight:700; color:#E8222A;">
+        <input type="number" id="baseFee" value="8000" min="0" step="1000" onchange="calculate()" style="font-weight:700; color:#E8222A;">
       </div>
       <div class="form-group">
         <label>📍 現場まで（空車回送）距離 km</label>
@@ -279,6 +281,10 @@
         <span class="amount" id="r-total">¥0</span>
       </div>
       <div class="note-text">※ 状況・作業内容により変動します。高速料金は目安込み・実際はETCの明細で確認。</div>
+    </div>
+    <button class="copy-btn" onclick="copyResult()">📋 見積もりをコピー（LINE・メモ用）</button>
+    <div style="margin-top:10px;">
+      <input type="text" id="caseMemo" placeholder="メモ（車種・場所・お客様名など）" style="width:100%; padding:10px 12px; border:2px solid #dde3ee; border-radius:6px; font-size:13px; font-family:inherit;">
     </div>
     <button class="save-btn" onclick="saveCase()">📝 この案件を保存</button>
   </div>
@@ -531,15 +537,15 @@
   }
 
   const serviceOptions = [
-    { name: 'バッテリー上がり（ジャンプスタート）', base: 12000 },
-    { name: 'タイヤ交換（スペアへ交換）', base: 12000 },
+    { name: 'バッテリー上がり（ジャンプスタート）', base: 8000 },
+    { name: 'タイヤ交換（スペアへ交換）', base: 8000 },
     { name: 'ガス欠・燃料補給（燃料代別）', base: 8000 },
-    { name: '脱輪・スタック救出', base: 25000 },
-    { name: '故障車搬送（エンジン不動など）', base: 15000 },
-    { name: '事故搬送', base: 25000 },
-    { name: '高速道路対応（高速料金別）', base: 35000 },
-    { name: '冠水・水没車の引き上げ・搬送', base: 50000 },
-    { name: '車検切れ車両の搬送', base: 20000 },
+    { name: '脱輪・スタック救出', base: 15000 },
+    { name: '故障車搬送（エンジン不動など）', base: 18000 },
+    { name: '事故搬送', base: 20000 },
+    { name: '高速道路対応（高速料金別）', base: 32000 },
+    { name: '冠水・水没車の引き上げ・搬送', base: 25000 },
+    { name: '車検切れ車両の搬送', base: 18000 },
   ];
 
   const sel = document.getElementById('serviceType');
@@ -553,6 +559,34 @@
   });
 
   function fmt(n) { return '¥' + Math.round(n).toLocaleString(); }
+
+  function copyResult() {
+    const base = Math.max(0, parseFloat(document.getElementById('baseFee').value) || 0);
+    const d1 = Math.max(0, parseFloat(document.getElementById('dist1').value) || 0);
+    const d2 = Math.max(0, parseFloat(document.getElementById('dist2').value) || 0);
+    const toll = Math.max(0, parseFloat(document.getElementById('tollFee').value) || 0);
+    const isNight = document.getElementById('nightCheck').checked;
+    const kaiso = d1 * 605;
+    const ken = d2 * 990;
+    const subtotal = base + kaiso + ken;
+    const nightAdd = isNight ? Math.round(subtotal * 0.3) : 0;
+    const total = subtotal + toll + nightAdd;
+    const typeEl = document.getElementById('serviceType');
+    const typeName = typeEl.options[typeEl.selectedIndex].text;
+    const lines = ['── アルパカレッカー 料金見積 ──'];
+    lines.push(`作業：${typeName}`);
+    if (d1 > 0) lines.push(`空車回送：${d1}km × 605円 ＝ ${fmt(kaiso)}`);
+    if (d2 > 0) lines.push(`牽引輸送：${d2}km × 990円 ＝ ${fmt(ken)}`);
+    if (toll > 0) lines.push(`高速料金：${fmt(toll)}`);
+    if (isNight) lines.push(`夜間割増：${fmt(nightAdd)}`);
+    lines.push(`合計（税込）：${fmt(total)}`);
+    lines.push('※ 状況・作業内容により変動します');
+    navigator.clipboard.writeText(lines.join('\n')).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      btn.textContent = '✅ コピーしました';
+      setTimeout(() => { btn.textContent = '📋 見積もりをコピー（LINE・メモ用）'; }, 1800);
+    });
+  }
 
   function calculate() {
     const base = Math.max(0, parseFloat(document.getElementById('baseFee').value) || 0);
@@ -607,12 +641,14 @@
     const typeEl = document.getElementById('serviceType');
     const typeName = typeEl.options[typeEl.selectedIndex].text;
 
+    const memo = document.getElementById('caseMemo').value.trim();
     const record = {
       id: Date.now(),
       date: new Date().toLocaleDateString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
       fullDate: new Date().toISOString(),
       type: typeName.replace(/（.*?）/, ''),
       total: total,
+      memo: memo,
     };
 
     const list = loadList();
@@ -620,6 +656,7 @@
     localStorage.setItem('alpaca_cases', JSON.stringify(list));
     renderHistory();
 
+    document.getElementById('caseMemo').value = '';
     const btn = document.querySelector('.save-btn');
     btn.textContent = '✅ 保存しました';
     setTimeout(() => { btn.textContent = '📝 この案件を保存'; }, 1500);
@@ -662,7 +699,7 @@
     container.innerHTML = list.map(r => `
       <div class="history-item">
         <span class="hi-date">${r.date}</span>
-        <span class="hi-type">${r.type}</span>
+        <span class="hi-type">${r.type}${r.memo ? '<br><span style="font-size:11px;color:#999;font-weight:400;">' + r.memo + '</span>' : ''}</span>
         <span class="hi-amount">¥${r.total.toLocaleString()}</span>
         <button class="hi-del" onclick="deleteCase(${r.id})" title="削除">✕</button>
       </div>
