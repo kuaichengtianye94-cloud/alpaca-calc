@@ -172,23 +172,80 @@
     <!-- 高速料金 -->
     <div style="background:#1a2f5e; border-radius:8px; padding:14px 16px; margin-bottom:16px;">
       <div style="color:#FFD700; font-size:12px; font-weight:900; margin-bottom:10px;">🛣️ 高速料金（中型車・ETC 目安）</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
-        <div>
-          <label style="display:block; font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:4px;">出発IC</label>
-          <select id="fromIC" onchange="calcToll()" style="width:100%; padding:8px 10px; border-radius:5px; border:none; font-size:12px; font-family:inherit; color:#1a1a2e; background:#fff;">
-            <option value="">選択...</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block; font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:4px;">到着IC</label>
-          <select id="toIC" onchange="calcToll()" style="width:100%; padding:8px 10px; border-radius:5px; border:none; font-size:12px; font-family:inherit; color:#1a1a2e; background:#fff;">
-            <option value="">選択...</option>
-          </select>
+
+      <!-- 区間①：出動 -->
+      <div style="margin-bottom:10px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:rgba(255,255,255,0.85); margin-bottom:6px; cursor:pointer;">
+          <input type="checkbox" id="chkDepart" onchange="calcToll()" style="width:15px; height:15px; cursor:pointer;">
+          出動分を含める（自社 → 現場）
+        </label>
+        <div id="sec-depart" style="display:none; padding-left:6px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div>
+              <label style="display:block; font-size:10px; color:rgba(255,255,255,0.5); margin-bottom:3px;">出発IC</label>
+              <select id="fromIC_depart" onchange="calcToll()" style="width:100%; padding:7px 8px; border-radius:5px; border:none; font-size:12px; font-family:inherit; color:#1a1a2e; background:#fff;">
+                <option value="">選択...</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size:10px; color:rgba(255,255,255,0.5); margin-bottom:3px;">到着IC</label>
+              <select id="toIC_depart" onchange="calcToll()" style="width:100%; padding:7px 8px; border-radius:5px; border:none; font-size:12px; font-family:inherit; color:#1a1a2e; background:#fff;">
+                <option value="">選択...</option>
+              </select>
+            </div>
+          </div>
+          <div id="toll-est-depart" style="font-size:10px; color:rgba(255,255,255,0.5); margin-top:4px; min-height:14px;"></div>
         </div>
       </div>
+
+      <!-- 区間②：搬送（必須） -->
+      <div style="margin-bottom:10px;">
+        <div style="font-size:11px; color:rgba(255,255,255,0.85); margin-bottom:6px;">搬送区間（現場 → 搬送先）</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <label style="display:block; font-size:10px; color:rgba(255,255,255,0.5); margin-bottom:3px;">出発IC</label>
+            <select id="fromIC" onchange="calcToll()" style="width:100%; padding:7px 8px; border-radius:5px; border:none; font-size:12px; font-family:inherit; color:#1a1a2e; background:#fff;">
+              <option value="">選択...</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:10px; color:rgba(255,255,255,0.5); margin-bottom:3px;">到着IC</label>
+            <select id="toIC" onchange="calcToll()" style="width:100%; padding:7px 8px; border-radius:5px; border:none; font-size:12px; font-family:inherit; color:#1a1a2e; background:#fff;">
+              <option value="">選択...</option>
+            </select>
+          </div>
+        </div>
+        <div id="toll-est-main" style="font-size:10px; color:rgba(255,255,255,0.5); margin-top:4px; min-height:14px;"></div>
+      </div>
+
+      <!-- 区間③：帰り -->
+      <div style="margin-bottom:10px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:rgba(255,255,255,0.85); margin-bottom:6px; cursor:pointer;">
+          <input type="checkbox" id="chkReturn" onchange="calcToll()" style="width:15px; height:15px; cursor:pointer;">
+          帰り分を含める（搬送先 → 帰着地）
+        </label>
+        <div id="sec-return" style="display:none; padding-left:6px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div>
+              <label style="display:block; font-size:10px; color:rgba(255,255,255,0.5); margin-bottom:3px;">出発IC</label>
+              <select id="fromIC_return" onchange="calcToll()" style="width:100%; padding:7px 8px; border-radius:5px; border:none; font-size:12px; font-family:inherit; color:#1a1a2e; background:#fff;">
+                <option value="">選択...</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size:10px; color:rgba(255,255,255,0.5); margin-bottom:3px;">到着IC</label>
+              <select id="toIC_return" onchange="calcToll()" style="width:100%; padding:7px 8px; border-radius:5px; border:none; font-size:12px; font-family:inherit; color:#1a1a2e; background:#fff;">
+                <option value="">選択...</option>
+              </select>
+            </div>
+          </div>
+          <div id="toll-est-return" style="font-size:10px; color:rgba(255,255,255,0.5); margin-top:4px; min-height:14px;"></div>
+        </div>
+      </div>
+
       <div id="toll-estimate" style="font-size:11px; color:#FFD700; margin-bottom:8px; min-height:16px;"></div>
       <div style="display:flex; align-items:center; gap:8px;">
-        <label style="font-size:11px; color:rgba(255,255,255,0.6); white-space:nowrap;">高速料金（円）：</label>
+        <label style="font-size:11px; color:rgba(255,255,255,0.6); white-space:nowrap;">高速料金合計（円）：</label>
         <input type="number" id="tollFee" placeholder="自動入力・変更可" min="0" step="10" oninput="calculate()" style="flex:1; padding:8px 10px; border-radius:5px; border:none; font-size:14px; font-weight:700; color:#E8222A; font-family:inherit;">
         <span style="color:rgba(255,255,255,0.6); font-size:12px;">円</span>
       </div>
@@ -408,31 +465,68 @@
     return Math.ceil((km * 40 + 200) / 100) * 100;
   }
 
-  // ICドロップダウン生成（出発デフォルト：神戸三田IC）
+  // ICドロップダウン生成（全6セレクト）
   (function buildICSelects() {
-    const fromSel = document.getElementById('fromIC');
-    const toSel = document.getElementById('toIC');
-    ALL_ICS.forEach(ic => {
-      const o1 = new Option(ic, ic);
-      if (ic === '神戸三田IC') o1.selected = true;
-      fromSel.appendChild(o1);
-      toSel.appendChild(new Option(ic, ic));
+    const ids = ['fromIC_depart','toIC_depart','fromIC','toIC','fromIC_return','toIC_return'];
+    ids.forEach(id => {
+      const sel = document.getElementById(id);
+      ALL_ICS.forEach(ic => sel.appendChild(new Option(ic, ic)));
     });
   })();
 
+  // チェックボックス切り替えで区間表示
+  document.getElementById('chkDepart').addEventListener('change', function() {
+    document.getElementById('sec-depart').style.display = this.checked ? 'block' : 'none';
+    calcToll();
+  });
+  document.getElementById('chkReturn').addEventListener('change', function() {
+    document.getElementById('sec-return').style.display = this.checked ? 'block' : 'none';
+    calcToll();
+  });
+
   let currentRoute = null;
 
-  function calcToll() {
-    const from = document.getElementById('fromIC').value;
-    const to = document.getElementById('toIC').value;
-    const est = document.getElementById('toll-estimate');
-    if (!from || !to || from === to) { est.textContent = ''; return; }
+  function calcSegment(fromId, toId, estId) {
+    const from = document.getElementById(fromId).value;
+    const to = document.getElementById(toId).value;
+    const est = document.getElementById(estId);
+    if (!from || !to || from === to) { if(est) est.textContent = ''; return { toll: 0, label: null }; }
     const km = dijkstra(from, to);
-    if (km === null) { est.textContent = '⚠ ルートが見つかりません'; return; }
+    if (km === null) { if(est) est.textContent = '⚠ ルートが見つかりません'; return { toll: 0, label: null }; }
     const toll = estimateToll(km);
-    document.getElementById('tollFee').value = toll;
-    est.textContent = `約${km}km → 目安 ¥${toll.toLocaleString()}（ETC中型車）`;
-    currentRoute = { label: `${from} → ${to}` };
+    if(est) est.textContent = `${from} → ${to}：約${km}km ¥${toll.toLocaleString()}`;
+    return { toll, label: `${from}→${to}` };
+  }
+
+  function calcToll() {
+    let total = 0;
+    const labels = [];
+
+    if (document.getElementById('chkDepart').checked) {
+      const r = calcSegment('fromIC_depart','toIC_depart','toll-est-depart');
+      total += r.toll; if (r.label) labels.push('出動:'+r.label);
+    } else {
+      document.getElementById('toll-est-depart').textContent = '';
+    }
+
+    const r2 = calcSegment('fromIC','toIC','toll-est-main');
+    total += r2.toll; if (r2.label) labels.push('搬送:'+r2.label);
+
+    if (document.getElementById('chkReturn').checked) {
+      const r3 = calcSegment('fromIC_return','toIC_return','toll-est-return');
+      total += r3.toll; if (r3.label) labels.push('帰り:'+r3.label);
+    } else {
+      document.getElementById('toll-est-return').textContent = '';
+    }
+
+    const summary = document.getElementById('toll-estimate');
+    if (total > 0) {
+      document.getElementById('tollFee').value = total;
+      summary.textContent = `合計 ¥${total.toLocaleString()}（ETC中型車 目安）`;
+    } else {
+      summary.textContent = '';
+    }
+    currentRoute = labels.length ? { label: labels.join(' / ') } : null;
     calculate();
   }
 
